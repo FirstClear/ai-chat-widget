@@ -1,0 +1,284 @@
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeRaw from "rehype-raw";
+import rehypeKatex from "rehype-katex";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { visit } from "unist-util-visit";
+// @ts-ignore - react-katex doesn't have TypeScript definitions
+import { InlineMath, BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+
+const SyntaxHighlighterComponent = SyntaxHighlighter as any;
+
+interface MarkdownContentProps {
+  content: string;
+  className?: string;
+}
+
+/**
+ * remark plugin: Convert [ ... ] format math blocks to proper math block AST
+ */
+const remarkBracketMath = () => (tree: any) => {
+  visit(
+    tree,
+    "paragraph",
+    (node: any, index: number | undefined, parent: any) => {
+      if (!parent || typeof index !== "number") return;
+
+      const raw = node.children
+        .map((c: any) => (typeof c.value === "string" ? c.value : ""))
+        .join("")
+        .trim();
+
+      if (raw.startsWith("[") && raw.endsWith("]")) {
+        const body = raw.slice(1, -1).trim();
+
+        parent.children.splice(index, 1, {
+          type: "math",
+          value: String(body), // Force string conversion
+          data: {
+            hName: "math",
+            hChildren: [
+              {
+                type: "text",
+                value: String(body),
+              },
+            ],
+          },
+        });
+      }
+    }
+  );
+};
+
+const remarkUniversalBracketMath = () => (tree: any) => {
+  visit(
+    tree,
+    "paragraph",
+    (node: any, index: number | undefined, parent: any) => {
+      if (
+        typeof index !== "number" ||
+        !parent ||
+        !Array.isArray(parent.children)
+      )
+        return;
+
+      // Concatenate paragraph content as plain text
+      const full = node.children
+        .map((c: any) => (typeof c.value === "string" ? c.value : ""))
+        .join("");
+
+      // Case 1: Entire paragraph is [ ... ]
+      if (full.trim().startsWith("[") && full.trim().endsWith("]")) {
+        const body = full.trim().slice(1, -1).trim();
+
+        parent.children.splice(index, 1, {
+          type: "math",
+          value: body,
+          data: {
+            hName: "math",
+            hChildren: [{ type: "text", value: body }],
+          },
+        });
+        return;
+      }
+
+      // Case 2: [ ... ] appears in the middle of a sentence
+      // Simplified regex: Match the first occurrence of [xxx] pattern
+      // Remove ^ and $ to allow matching anywhere in the paragraph
+      // Use g flag to find all matches (if multiple matches need to be processed)
+      const bracketRegex = /\[([^\]]+)\]/g;
+      const matches = [...full.matchAll(bracketRegex)];
+
+      if (matches.length === 0) return;
+
+      // Use the first match as an example
+      const match = matches[0];
+      const fullMatch = match[0]; // Complete [xxx]
+      const body = match[1].trim(); // Content inside brackets
+      const matchIndex = match.index!;
+
+      const before = full.substring(0, matchIndex);
+      const after = full.substring(matchIndex + fullMatch.length);
+
+      const newNodes = [];
+
+      if (before.trim()) {
+        newNodes.push({
+          type: "paragraph",
+          children: [{ type: "text", value: before }],
+        });
+      }
+
+      newNodes.push({
+        type: "math",
+        value: body,
+        data: {
+          hName: "math",
+          hChildren: [{ type: "text", value: body }],
+        },
+      });
+
+      if (after.trim()) {
+        newNodes.push({
+          type: "paragraph",
+          children: [{ type: "text", value: after }],
+        });
+      }
+
+      parent.children.splice(index, 1, ...newNodes);
+    }
+  );
+};
+
+export const MarkdownContent: React.FC<MarkdownContentProps> = ({
+  content,
+  className = "",
+}) => {
+  return (
+    <div className={`ai-chat-markdown ${className}`}>
+      <ReactMarkdown
+        remarkPlugins={[
+          remarkGfm,
+          remarkMath,
+          remarkBracketMath,
+          remarkUniversalBracketMath,
+        ]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
+        components={{
+          // Prism syntax highlighting for code blocks
+          code({ inline, className, children, ...props }: any) {
+            const match = /language-(\w+)/.exec(className || "");
+            return !inline && match ? (
+              <SyntaxHighlighterComponent
+                style={vscDarkPlus}
+                language={match[1]}
+                PreTag="div"
+                className="ai-chat-code-block"
+                {...props}
+              >
+                {String(children).replace(/\n$/, "")}
+              </SyntaxHighlighterComponent>
+            ) : (
+              <code className="ai-chat-inline-code" {...props}>
+                {children}
+              </code>
+            );
+          },
+
+          // KaTeX inline math (generated by remark-math)
+          // @ts-ignore
+          inlineMath({ children }: any) {
+            return <InlineMath math={children} />;
+          },
+
+          // KaTeX block math (generated by remark-math)
+          // @ts-ignore
+          math({ children }: any) {
+            return <BlockMath math={children} />;
+          },
+
+          // Other Markdown elements
+          p({ children }: any) {
+            return <p className="ai-chat-markdown-p">{children}</p>;
+          },
+          h1({ children }) {
+            return <h1 className="ai-chat-markdown-h1">{children}</h1>;
+          },
+          h2({ children }) {
+            return <h2 className="ai-chat-markdown-h2">{children}</h2>;
+          },
+          h3({ children }) {
+            return <h3 className="ai-chat-markdown-h3">{children}</h3>;
+          },
+          h4({ children }) {
+            return <h4 className="ai-chat-markdown-h4">{children}</h4>;
+          },
+          h5({ children }) {
+            return <h5 className="ai-chat-markdown-h5">{children}</h5>;
+          },
+          h6({ children }) {
+            return <h6 className="ai-chat-markdown-h6">{children}</h6>;
+          },
+          ul({ children }) {
+            return <ul className="ai-chat-markdown-ul">{children}</ul>;
+          },
+          ol({ children }) {
+            return <ol className="ai-chat-markdown-ol">{children}</ol>;
+          },
+          li({ children }) {
+            return <li className="ai-chat-markdown-li">{children}</li>;
+          },
+          blockquote({ children }) {
+            return (
+              <blockquote className="ai-chat-markdown-blockquote">
+                {children}
+              </blockquote>
+            );
+          },
+          a({ href, children }) {
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ai-chat-markdown-a"
+              >
+                {children}
+              </a>
+            );
+          },
+          table({ children }) {
+            return <table className="ai-chat-markdown-table">{children}</table>;
+          },
+          thead({ children }) {
+            return <thead className="ai-chat-markdown-thead">{children}</thead>;
+          },
+          tbody({ children }) {
+            return <tbody className="ai-chat-markdown-tbody">{children}</tbody>;
+          },
+          tr({ children }) {
+            return <tr className="ai-chat-markdown-tr">{children}</tr>;
+          },
+          th({ children }) {
+            return <th className="ai-chat-markdown-th">{children}</th>;
+          },
+          td({ children }) {
+            return <td className="ai-chat-markdown-td">{children}</td>;
+          },
+          hr() {
+            return <hr className="ai-chat-markdown-hr" />;
+          },
+          strong({ children }) {
+            return (
+              <strong className="ai-chat-markdown-strong">{children}</strong>
+            );
+          },
+          em({ children }) {
+            return <em className="ai-chat-markdown-em">{children}</em>;
+          },
+          pre({ children }: any) {
+            return <pre className="ai-chat-markdown-pre">{children}</pre>;
+          },
+          img({ src, alt, ...props }: any) {
+            return (
+              <img
+                src={src}
+                alt={alt}
+                className="ai-chat-markdown-img"
+                {...props}
+              />
+            );
+          },
+          // For unmatched elements, use default rendering
+          // ReactMarkdown will automatically handle undefined components using default HTML elements
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+};
