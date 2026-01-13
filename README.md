@@ -2,6 +2,10 @@
 
 <div align="center">
 
+[![npm version](https://img.shields.io/npm/v/@kendent/ai-chat-widget.svg)](https://www.npmjs.com/package/@kendent/ai-chat-widget)
+[![npm downloads](https://img.shields.io/npm/dm/@kendent/ai-chat-widget.svg)](https://www.npmjs.com/package/@kendent/ai-chat-widget)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Language / 语言**: [English](#english) | [中文](#中文)
 
 </div>
@@ -39,7 +43,7 @@ dist/         # Build output
 #### Installation
 
 ```bash
-npm install ai-chat-widget
+npm install @kendent/ai-chat-widget
 ```
 
 #### Run Example
@@ -53,8 +57,8 @@ yarn dev  # Start example app, visit http://localhost:3000
 #### Basic Usage
 
 ```tsx
-import { AIChatWidget } from 'ai-chat-widget';
-import 'ai-chat-widget/dist/style.css';
+import { AIChatWidget } from '@kendent/ai-chat-widget';
+import '@kendent/ai-chat-widget/dist/style.css';
 
 function App() {
   return (
@@ -101,7 +105,7 @@ interface MemoryConfig {
 #### Create Plugin
 
 ```typescript
-import { ChatPlugin } from 'ai-chat-widget';
+import { ChatPlugin } from '@kendent/ai-chat-widget';
 
 const searchPlugin: ChatPlugin = {
   name: 'search',
@@ -136,7 +140,7 @@ const searchPlugin: ChatPlugin = {
 #### Custom Provider
 
 ```typescript
-import { BaseProvider, ProviderHub } from 'ai-chat-widget';
+import { BaseProvider, ProviderHub } from '@kendent/ai-chat-widget';
 
 class CustomProvider extends BaseProvider {
   name = 'custom';
@@ -157,7 +161,7 @@ hub.register(new CustomProvider());
 #### Direct Usage of Orchestrator
 
 ```typescript
-import { ConversationOrchestrator } from 'ai-chat-widget';
+import { ConversationOrchestrator } from '@kendent/ai-chat-widget';
 
 const orchestrator = new ConversationOrchestrator({
   provider: {
@@ -240,7 +244,7 @@ dist/         # 构建输出
 #### 安装
 
 ```bash
-npm install ai-chat-widget
+npm install @kendent/ai-chat-widget
 ```
 
 #### 运行示例
@@ -254,8 +258,8 @@ yarn dev  # 启动示例应用，访问 http://localhost:3000
 #### 基础用法
 
 ```tsx
-import { AIChatWidget } from 'ai-chat-widget';
-import 'ai-chat-widget/dist/style.css';
+import { AIChatWidget } from '@kendent/ai-chat-widget';
+import '@kendent/ai-chat-widget/dist/style.css';
 
 function App() {
   return (
@@ -302,7 +306,7 @@ interface MemoryConfig {
 #### 创建插件
 
 ```typescript
-import { ChatPlugin } from 'ai-chat-widget';
+import { ChatPlugin } from '@kendent/ai-chat-widget';
 
 const searchPlugin: ChatPlugin = {
   name: 'search',
@@ -337,7 +341,7 @@ const searchPlugin: ChatPlugin = {
 #### 自定义 Provider
 
 ```typescript
-import { BaseProvider, ProviderHub } from 'ai-chat-widget';
+import { BaseProvider, ProviderHub } from '@kendent/ai-chat-widget';
 
 class CustomProvider extends BaseProvider {
   name = 'custom';
@@ -358,7 +362,7 @@ hub.register(new CustomProvider());
 #### 直接使用 Orchestrator
 
 ```typescript
-import { ConversationOrchestrator } from 'ai-chat-widget';
+import { ConversationOrchestrator } from '@kendent/ai-chat-widget';
 
 const orchestrator = new ConversationOrchestrator({
   provider: {
