@@ -1,12 +1,13 @@
 {
-  "name": "ai-chat-widget",
+  "name": "@kendent/ai-chat-widget",
   "version": "1.0.0",
   "description": "A plug-and-play, extensible, persistent, context-aware frontend conversation OS component",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "cross-env BUILD_LIB=true vite build",
@@ -22,10 +23,23 @@
     "llm",
     "conversation",
     "openai",
-    "claude"
+    "claude",
+    "moonshot",
+    "react",
+    "typescript",
+    "markdown",
+    "katex"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FirstClear/ai-chat-widget.git"
+  },
+  "homepage": "https://github.com/FirstClear/ai-chat-widget#readme",
+  "bugs": {
+    "url": "https://github.com/FirstClear/ai-chat-widget/issues"
+  },
   "devDependencies": {
     "@types/node": "^20.10.6",
     "@types/react": "^18.2.45",
